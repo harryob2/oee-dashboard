@@ -15,8 +15,6 @@ calendar = Calendar.getInstance()
 calendar.add(Calendar.DATE, -1)
 yesterday = calendar.getTime()
 
-# Calculate run minutes
-
 machine_tags = [
     'limerick/baseplates/makino/makino 2/global tags/run',
     'limerick/baseplates/makino/makino 3/global tags/run',
