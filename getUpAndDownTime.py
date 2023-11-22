@@ -1,6 +1,6 @@
 import system
 from java.util import Calendar
-from historical import duration, sum, maximum
+from historical import duration, durationOff
 
 # Function to parse 'cell', 'area', and 'machine' identifiers from a machine tag
 def extract_info_from_tag(tag):
@@ -9,6 +9,13 @@ def extract_info_from_tag(tag):
         return parts[1], parts[2], parts[3]
     else:
         return "Unknown", "Unknown", "Unknown"
+
+# Calculate start and end times
+calendar = Calendar.getInstance()
+calendar.add(Calendar.DATE, -1)
+yesterday = calendar.getTime()
+startTime = system.date.midnight(yesterday)
+endTime = system.date.addDays(startTime, 1)
 
 machine_tags = [
     'limerick/baseplates/makino/makino 2/global tags/run',
@@ -119,65 +126,24 @@ machine_tags = [
     'limerick/triathlon cementless/polish/polish 3/global tags/run'
     ]
 
-# Calculate yesterday's date
-calendar = Calendar.getInstance()
-calendar.add(Calendar.DATE, -1)
-yesterday = calendar.getTime()
-
-# Set the start date to August 14, 2023
-startCalendar = Calendar.getInstance()
-startCalendar.set(2023, Calendar.AUGUST, 14)  # Calendar.AUGUST is equivalent to 7
-
-# Loop over each day from the start date to yesterday
-while startCalendar.getTimeInMillis() <= yesterday.getTime():
-    # Midnight of the current day in the loop
-    loopDayStart = system.date.midnight(startCalendar.getTime())
-    # One day after the start, which is the end of the current day in the loop
-    loopDayEnd = system.date.addDays(loopDayStart, 1)
-
-    # Now loop over each machine tag for the current day
-    for machine_tag in machine_tags:
+for machine_tag in machine_tags:
         # Replace run with idle
         machine_tag_idle = machine_tag.replace("run", "idle")
 
         # Replace run with fault
         machine_tag_fault = machine_tag.replace("run", "fault")
 
-        # Replace run with dhr recorded
-        machine_tag_dhr_recorded = machine_tag.replace('run', 'dhr recorded')
-        
-        # Replace run with target per day
-        machine_tag_target_per_day = machine_tag.replace('run', 'target per day')
-
-        # Calculate run, idle, and fault minutes
-        runMinutes, idleMinutes, faultMinutes = duration(machine_tag, startTime, endTime, 1) // 60, duration(machine_tag_idle, startTime, endTime, 1) // 60, duration(machine_tag_fault, startTime, endTime, 1) // 60
+        # Calculate run seconds
+        runSeconds, idleSeconds, faultSeconds = duration(machine_tag, startTime, endTime, 1), duration(machine_tag_idle, startTime, endTime, 1), duration(machine_tag_fault, startTime, endTime, 1)
     
-        # Calculate run, idle, and fault time %
-        runTimePercent, idleTimePercent, faultTimePercent  = round(runMinutes*100 / 1440, 14), round(idleMinutes*100 / 1440, 14), round(faultMinutes*100 / 1440, 14)
-
-        # Calculate output
-        output = sum(machine_tag_dhr_recorded, startTime, endTime)
-        
-        # Calculate target
-        target = maximum(machine_tag_target_per_day, startTime, endTime)
-
-        # Calculate performance
-        performance = round(output*100 / target, 14) if target != 0 else 0
+        # Calculate downtime seconds
+        # downtimeSeconds = durationOff(machine_tag, startTime, endTime, 1)
     
         # Extract cell, area, and machine info
         cell, area, machine = extract_info_from_tag(machine_tag)
-    
-        # Prepare SQL query
-        sql_query = "INSERT INTO analysis_connect.machine_run_minutes (cell, area, machine, date, run_minutes, run_time_percent, idle_minutes, idle_time_percent, fault_minutes, fault_time_percent, output, target, performance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-    
-        # Attempt to insert data into the database and log the outcome
-        try:
-            affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, yesterday, runMinutes, runTimePercent, idleMinutes, idleTimePercent, faultMinutes, faultTimePercent, output, target, performance], "PowerBI2")
-            print("Inserted data for {} successfully. Rows affected: {}".format(machine_tag, affectedRows))
-        except Exception as e:
-            print("Error inserting data for {}: {}".format(machine_tag, e))
 
-    # Move to the next day
-    startCalendar.add(Calendar.DATE, 1)
+        # Difference of sum from 86400
+        diff = 86400 - (abs(runSeconds) + abs(idleSeconds) + abs(faultSeconds))
 
-print("All runtimes added to MariaDB.")
+        # Print run, idle, and fault seconds
+        print(cell, area, machine, diff)

@@ -1,6 +1,6 @@
 import system
 from java.util import Calendar
-from historical import duration
+from historical import duration, sum, maximum
 
 # Function to parse 'cell', 'area', and 'machine' identifiers from a machine tag
 def extract_info_from_tag(tag):
@@ -127,21 +127,42 @@ machine_tags = [
     ]
 
 for machine_tag in machine_tags:
-        # Calculate run minutes
-        runMinutes = duration(machine_tag, startTime, endTime, 1) // 60
+        # Replace run with idle
+        machine_tag_idle = machine_tag.replace("run", "idle")
+
+        # Replace run with fault
+        machine_tag_fault = machine_tag.replace("run", "fault")
+
+        # Replace run with dhr recorded
+        machine_tag_dhr_recorded = machine_tag.replace('run', 'dhr recorded')
+        
+        # Replace run with target per day
+        machine_tag_target_per_day = machine_tag.replace('run', 'target per day')
+
+        # Calculate run, idle, and fault minutes
+        runMinutes, idleMinutes, faultMinutes = duration(machine_tag, startTime, endTime, 1) // 60, duration(machine_tag_idle, startTime, endTime, 1) // 60, duration(machine_tag_fault, startTime, endTime, 1) // 60
     
-        # Calculate runtime %
-        runtimePercent = round(runMinutes*100 / 1440, 14)
+        # Calculate run, idle, and fault time %
+        runTimePercent, idleTimePercent, faultTimePercent  = round(runMinutes*100 / 1440, 14), round(idleMinutes*100 / 1440, 14), round(faultMinutes*100 / 1440, 14)
+
+        # Calculate output
+        output = sum(machine_tag_dhr_recorded, startTime, endTime)
+        
+        # Calculate target
+        target = maximum(machine_tag_target_per_day, startTime, endTime)
+
+        # Calculate performance
+        performance = round(output*100 / target, 14) if target != 0 else 0
     
         # Extract cell, area, and machine info
         cell, area, machine = extract_info_from_tag(machine_tag)
     
         # Prepare SQL query
-        sql_query = "INSERT INTO analysis_connect.machine_run_minutes (cell, area, machine, date, run_minutes, runtime_percent) VALUES (?, ?, ?, ?, ?, ?)"
+        sql_query = "INSERT INTO analysis_connect.machine_run_minutes (cell, area, machine, date, run_minutes, run_time_percent, idle_minutes, idle_time_percent, fault_minutes, fault_time_percent, output, target, performance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     
         # Attempt to insert data into the database and log the outcome
         try:
-            affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, yesterday, runMinutes, runtimePercent], "PowerBI2")
+            affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, yesterday, runMinutes, runTimePercent, idleMinutes, idleTimePercent, faultMinutes, faultTimePercent, output, target, performance], "PowerBI2")
             print("Inserted data for {} successfully. Rows affected: {}".format(machine_tag, affectedRows))
         except Exception as e:
             print("Error inserting data for {}: {}".format(machine_tag, e))
