@@ -14,6 +14,9 @@ def extract_info_from_tag(tag):
 calendar = Calendar.getInstance()
 calendar.add(Calendar.DATE, -1)
 yesterday = calendar.getTime()
+jan12023 = system.date.getDate(2023, 0, 1)
+jan12022 = system.date.getDate(2022, 0, 1)
+jan12021 = system.date.getDate(2021, 0, 1)
 
 machine_tags = [
     'limerick/baseplates/makino/makino 2/global tags/run',
@@ -127,7 +130,7 @@ machine_tags = [
 
 for machine_tag in machine_tags:
         # Calculate run minutes
-        startTime = system.date.midnight(yesterday)
+        startTime = system.date.midnight(jan12023)
         endTime = system.date.addDays(startTime, 1)
         runMinutes = duration(machine_tag, startTime, endTime, 1) // 60
     
