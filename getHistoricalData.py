@@ -10,13 +10,6 @@ def extract_info_from_tag(tag):
     else:
         return "Unknown", "Unknown", "Unknown"
 
-# Calculate start and end times
-calendar = Calendar.getInstance()
-calendar.add(Calendar.DATE, -1)
-yesterday = calendar.getTime()
-startTime = system.date.midnight(yesterday)
-endTime = system.date.addDays(startTime, 1)
-
 machine_tags = [
     'limerick/baseplates/makino/makino 2/global tags/run',
     'limerick/baseplates/makino/makino 3/global tags/run',
@@ -126,22 +119,43 @@ machine_tags = [
     'limerick/triathlon cementless/polish/polish 3/global tags/run'
     ]
 
-for machine_tag in machine_tags:
-        # Calculate run minutes
-        runMinutes = duration(machine_tag, startTime, endTime, 1) // 60
-    
+# Calculate yesterday's date
+calendar = Calendar.getInstance()
+calendar.add(Calendar.DATE, -1)
+yesterday = calendar.getTime()
+
+# Set the start date to August 14, 2023
+startCalendar = Calendar.getInstance()
+startCalendar.set(2023, Calendar.AUGUST, 14)  # Calendar.AUGUST is equivalent to 7
+
+# Loop over each day from the start date to yesterday
+while startCalendar.getTimeInMillis() <= yesterday.getTime():
+    # Midnight of the current day in the loop
+    loopDayStart = system.date.midnight(startCalendar.getTime())
+    # One day after the start, which is the end of the current day in the loop
+    loopDayEnd = system.date.addDays(loopDayStart, 1)
+
+    # Now loop over each machine tag for the current day
+    for machine_tag in machine_tags:
+        # Calculate run minutes for the current machine tag and day
+        runMinutes = duration(machine_tag, loopDayStart, loopDayEnd, 1) // 60
         # Calculate runtime %
-        runtimePercent = round(runMinutes*100 / 1440, 14)
-    
+        runtimePercent = round(runMinutes * 100 / 1440, 2)
+        
         # Extract cell, area, and machine info
         cell, area, machine = extract_info_from_tag(machine_tag)
-    
+        
         # Prepare SQL query
         sql_query = "INSERT INTO analysis_connect.machine_run_minutes (cell, area, machine, date, run_minutes, runtime_percent) VALUES (?, ?, ?, ?, ?, ?)"
-    
+        
         # Attempt to insert data into the database and log the outcome
         try:
-            affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, yesterday, runMinutes, runtimePercent], "PowerBI2")
-            print("Inserted data for {} successfully. Rows affected: {}".format(machine_tag, affectedRows))
+            affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, loopDayStart, runMinutes, runtimePercent], "PowerBI2")
+            print("Inserted data for {} on {} successfully. Rows affected: {}".format(machine_tag, system.date.format(loopDayStart, "yyyy-MM-dd"), affectedRows))
         except Exception as e:
-            print("Error inserting data for {}: {}".format(machine_tag, e))
+            print("Error inserting data for {} on {}: {}".format(machine_tag, system.date.format(loopDayStart, "yyyy-MM-dd"), e))
+
+    # Move to the next day
+    startCalendar.add(Calendar.DATE, 1)
+
+print("All runtimes added to MariaDB.")
