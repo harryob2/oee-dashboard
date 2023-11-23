@@ -1,7 +1,17 @@
-import system
 from java.util import Calendar
 from historical import duration, sum, maximum
+from java.text import SimpleDateFormat
 import java.lang.System as System
+import system
+from com.inductiveautomation.ignition.client.util.gui import OutputConsole
+from java.awt.event import ActionEvent
+import sys
+
+# Function to clear the Ignition console
+def clear_ignition_console():
+    console = OutputConsole.getInstance()
+    action_event = ActionEvent(console, ActionEvent.ACTION_PERFORMED, "clear")
+    console.actionPerformed(action_event)
 
 # Function to parse 'cell', 'area', and 'machine' identifiers from a machine tag
 def extract_info_from_tag(tag):
@@ -11,29 +21,19 @@ def extract_info_from_tag(tag):
     else:
         return "Unknown", "Unknown", "Unknown"
     
-# Calculate yesterday's date
-calendar = Calendar.getInstance()
-calendar.add(Calendar.DATE, -1)
-yesterday = calendar.getTime()
-
-# Set the start date to August 14, 2023
-startCalendar = Calendar.getInstance()
-startCalendar.set(2023, Calendar.AUGUST, 14)  # Calendar.AUGUST is equivalent to 7
-
-# Start time for the whole process
-start_time = System.currentTimeMillis()
-days_processed = 0
-    
-# Calculate total number of days to process
-total_days = (yesterday.getTime() - startCalendar.getTimeInMillis()) // (24 * 60 * 60 * 1000) + 1
+# Function to create a loading bar
+def create_loading_bar(percentage, length=30):
+    filled_length = int(length * percentage)
+    return '#' * filled_length + '-' * (length - filled_length)
 
 # Function to estimate time left
-def estimate_time_left(start_time, days_processed):
+def estimate_time_left(start_time, total_days, days_processed):
     elapsed_time = (System.currentTimeMillis() - start_time) / 1000  # in seconds
     if days_processed > 0:
-        time_left_seconds =  elapsed_time * (total_days - days_processed - 1)
-        return time_left_seconds
+        seconds_per_day = elapsed_time / days_processed
+        return (total_days - days_processed) * seconds_per_day
     return 0
+
 
 machine_tags = [
     'limerick/baseplates/makino/makino 2/global tags/run',
@@ -144,15 +144,58 @@ machine_tags = [
     'limerick/triathlon cementless/polish/polish 3/global tags/run'
     ]
 
+# Calculate yesterday's date
+calendar = Calendar.getInstance()
+calendar.add(Calendar.DATE, -1)
+yesterday = calendar.getTime()
+
+# Set the start date to August 14, 2023
+startCalendar = Calendar.getInstance()
+startCalendar.set(2023, Calendar.AUGUST, 14)  # Calendar.AUGUST is equivalent to 7
+
+# Create a date formatter for displaying the date
+date_formatter = SimpleDateFormat("yyyy-MM-dd")
+
+# Calculate total number of days to process
+total_days = (yesterday.getTime() - startCalendar.getTimeInMillis()) // (24 * 60 * 60 * 1000) + 1
+days_processed = 0
+
+# Start time for the whole process
+start_time = System.currentTimeMillis()
+
 # Loop over each day from the start date to yesterday
 while startCalendar.getTimeInMillis() <= yesterday.getTime():
+
+    # Calculate the progress
+    progress_percentage = days_processed / float(total_days)
+    loading_bar = create_loading_bar(progress_percentage)
+
+    # Estimate time left
+    time_left_seconds = estimate_time_left(start_time, total_days, days_processed)
+    time_left = "Time left: {:.2f} minutes".format(time_left_seconds / 60)
+
     # Midnight of the current day in the loop
     loopDayStart = system.date.midnight(startCalendar.getTime())
+    # Format the date for display
+    formatted_date = date_formatter.format(loopDayStart)
+
     # One day after the start, which is the end of the current day in the loop
     loopDayEnd = system.date.addDays(loopDayStart, 1)
 
     # Now loop over each machine tag for the current day
     for machine_tag in machine_tags:
+
+        # Extract cell, area, and machine info
+        cell, area, machine = extract_info_from_tag(machine_tag)
+        
+        # Clear the line before printing
+        sys.stdout.write('\r' + ' ' * 80)
+        sys.stdout.flush()
+        # Print the current status with cell, area, machine, and date
+        sys.stdout.write('\rDate: {}\nCell: {}\nArea: {}\nMachine: {}\nProgress: {} {:.1f}%\n{}\n'.format(
+            formatted_date, cell, area, machine, loading_bar, progress_percentage * 100, time_left))
+        sys.stdout.flush()
+
         # Replace run with idle
         machine_tag_idle = machine_tag.replace("run", "idle")
 
@@ -179,33 +222,20 @@ while startCalendar.getTimeInMillis() <= yesterday.getTime():
 
         # Calculate performance
         performance = round(output*100 / target, 14) if target != 0 else 0
-
-        # Calculate OEE
-        oee = runTimePercent * performance
-    
-        # Extract cell, area, and machine info
-        cell, area, machine = extract_info_from_tag(machine_tag)
     
         # Prepare SQL query
-        sql_query = "INSERT INTO analysis_connect.oee_data (cell, area, machine, date, run_minutes, run_time_percent, idle_minutes, idle_time_percent, fault_minutes, fault_time_percent, output, target, performance, oee) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        sql_query = "INSERT INTO analysis_connect.oee_data (cell, area, machine, date, run_minutes, run_time_percent, idle_minutes, idle_time_percent, fault_minutes, fault_time_percent, output, target, performance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     
         # Attempt to insert data into the database and log the outcome
         try:
-            affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, loopDayStart, runMinutes, runTimePercent, idleMinutes, idleTimePercent, faultMinutes, faultTimePercent, output, target, performance, oee], "PowerBI2")
+            affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, loopDayStart, runMinutes, runTimePercent, idleMinutes, idleTimePercent, faultMinutes, faultTimePercent, output, target, performance], "PowerBI2")
         except Exception as e:
             print("Error inserting data for {}: {}".format(machine_tag, e))
 
+
     # Move to the next day
-    print('Finished for {}'.format(loopDayStart))
-
-    # Estimate time left
-    
-
-    time_left_seconds = estimate_time_left(start_time, days_processed)
-    print("Time left: {:.2f} minutes".format(time_left_seconds / 60))
     days_processed += 1
-    start_time = System.currentTimeMillis()
-
     startCalendar.add(Calendar.DATE, 1)
+    print('\n')  # Move to the next line for clarity in the terminal
 
-print("All runtimes added to MariaDB.")
+print("\nAll runtimes added to MariaDB.")
