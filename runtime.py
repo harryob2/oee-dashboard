@@ -158,7 +158,7 @@ for machine_tag in machine_tags:
         cell, area, machine = extract_info_from_tag(machine_tag)
     
         # Prepare SQL query
-        sql_query = "INSERT INTO analysis_connect.machine_run_minutes (cell, area, machine, date, run_minutes, run_time_percent, idle_minutes, idle_time_percent, fault_minutes, fault_time_percent, output, target, performance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        sql_query = "INSERT INTO analysis_connect.oee_data (cell, area, machine, date, run_minutes, run_time_percent, idle_minutes, idle_time_percent, fault_minutes, fault_time_percent, output, target, performance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     
         # Attempt to insert data into the database and log the outcome
         try:
@@ -166,3 +166,11 @@ for machine_tag in machine_tags:
             print("Inserted data for {} successfully. Rows affected: {}".format(machine_tag, affectedRows))
         except Exception as e:
             print("Error inserting data for {}: {}".format(machine_tag, e))
+
+# Update the 'oee_update_timestamp' table with the current date and time
+timestamp_query = "INSERT INTO analysis_connect.oee_update_timestamp (timestamp) VALUES (?)"
+try:
+    system.db.runPrepUpdate(timestamp_query, [system.date.now()], "PowerBI2")
+    print("Updated the oee_update_timestamp table successfully.")
+except Exception as e:
+    print("Error updating the oee_update_timestamp table: {}".format(e))
