@@ -150,16 +150,16 @@ while startCalendar.getTimeInMillis() <= yesterday.getTime():
         machine_tag_target_per_day = machine_tag.replace('run', 'target per day')
 
         # Calculate run, idle, and fault minutes
-        runMinutes, idleMinutes, faultMinutes = duration(machine_tag, startTime, endTime, 1) // 60, duration(machine_tag_idle, startTime, endTime, 1) // 60, duration(machine_tag_fault, startTime, endTime, 1) // 60
+        runMinutes, idleMinutes, faultMinutes = duration(machine_tag, loopDayStart, loopDayEnd, 1) // 60, duration(machine_tag_idle, loopDayStart, loopDayEnd, 1) // 60, duration(machine_tag_fault, loopDayStart, loopDayEnd, 1) // 60
     
         # Calculate run, idle, and fault time %
         runTimePercent, idleTimePercent, faultTimePercent  = round(runMinutes*100 / 1440, 14), round(idleMinutes*100 / 1440, 14), round(faultMinutes*100 / 1440, 14)
 
         # Calculate output
-        output = sum(machine_tag_dhr_recorded, startTime, endTime)
+        output = sum(machine_tag_dhr_recorded, loopDayStart, loopDayEnd)
         
         # Calculate target
-        target = maximum(machine_tag_target_per_day, startTime, endTime)
+        target = maximum(machine_tag_target_per_day, loopDayStart, loopDayEnd)
 
         # Calculate performance
         performance = round(output*100 / target, 14) if target != 0 else 0
@@ -172,7 +172,7 @@ while startCalendar.getTimeInMillis() <= yesterday.getTime():
     
         # Attempt to insert data into the database and log the outcome
         try:
-            affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, yesterday, runMinutes, runTimePercent, idleMinutes, idleTimePercent, faultMinutes, faultTimePercent, output, target, performance], "PowerBI2")
+            affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, loopDayStart, runMinutes, runTimePercent, idleMinutes, idleTimePercent, faultMinutes, faultTimePercent, output, target, performance], "PowerBI2")
             print("Inserted data for {} successfully. Rows affected: {}".format(machine_tag, affectedRows))
         except Exception as e:
             print("Error inserting data for {}: {}".format(machine_tag, e))
