@@ -170,10 +170,9 @@ for machine_tag in machine_tags:
         except Exception as e:
             print("Error inserting data for {}: {}".format(machine_tag, e))
 
-# Update the 'oee_update_timestamp' table with the current date and time
-timestamp_query = "INSERT INTO analysis_connect.oee_update_timestamp (timestamp) VALUES (?)"
-try:
-    system.db.runPrepUpdate(timestamp_query, [system.date.now()], "PowerBI2")
-    print("Updated the oee_update_timestamp table successfully.")
-except Exception as e:
-    print("Error updating the oee_update_timestamp table: {}".format(e))
+# Update timestamp
+truncate_query = "TRUNCATE TABLE analysis_connect.oee_update_timestamp"
+system.db.runUpdateQuery(truncate_query, "PowerBI2")
+insert_query = "INSERT INTO analysis_connect.oee_update_timestamp (timestamp) VALUES (?)"
+system.db.runPrepUpdate(insert_query, [system.date.now()], "PowerBI2")
+print("Updated timestamp in oee_update_timestamp table successfully.")
