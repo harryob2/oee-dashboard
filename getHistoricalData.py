@@ -170,7 +170,7 @@ while startCalendar.getTimeInMillis() <= yesterday.getTime():
         runMinutes, idleMinutes, faultMinutes = duration(machine_tag, loopDayStart, loopDayEnd, 1) // 60, duration(machine_tag_idle, loopDayStart, loopDayEnd, 1) // 60, duration(machine_tag_fault, loopDayStart, loopDayEnd, 1) // 60
     
         # Calculate run, idle, and fault time %
-        runTimePercent, idleTimePercent, faultTimePercent  = round(runMinutes / 1440, 14), round(idleMinutes / 1440, 14), round(faultMinutes / 1440, 14)
+        runTimePercent, idleTimePercent, faultTimePercent  = round(runMinutes / 1440, 6), round(idleMinutes / 1440, 6), round(faultMinutes / 1440, 6)
 
         # Calculate output
         output = sum(machine_tag_dhr_recorded, loopDayStart, loopDayEnd)
@@ -179,7 +179,9 @@ while startCalendar.getTimeInMillis() <= yesterday.getTime():
         target = maximum(machine_tag_target_per_day, loopDayStart, loopDayEnd)
 
         # Calculate performance
-        performance = round(output / target, 14) if target != 0 else 0
+        performance = min(
+            round(output / target, 6) if target != 0 else 0,
+            1.5)
 
         # Calculate OEE
         oee = runTimePercent * performance
