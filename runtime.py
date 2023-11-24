@@ -143,7 +143,7 @@ for machine_tag in machine_tags:
         runMinutes, idleMinutes, faultMinutes = duration(machine_tag, startTime, endTime, 1) // 60, duration(machine_tag_idle, startTime, endTime, 1) // 60, duration(machine_tag_fault, startTime, endTime, 1) // 60
     
         # Calculate run, idle, and fault time %
-        runTimePercent, idleTimePercent, faultTimePercent  = round(runMinutes*100 / 1440, 14), round(idleMinutes*100 / 1440, 14), round(faultMinutes*100 / 1440, 14)
+        runTimePercent, idleTimePercent, faultTimePercent  = round(runMinutes / 1440, 14), round(idleMinutes / 1440, 14), round(faultMinutes / 1440, 14)
 
         # Calculate output
         output = sum(machine_tag_dhr_recorded, startTime, endTime)
@@ -152,17 +152,20 @@ for machine_tag in machine_tags:
         target = maximum(machine_tag_target_per_day, startTime, endTime)
 
         # Calculate performance
-        performance = round(output*100 / target, 14) if target != 0 else 0
+        performance = round(output / target, 14) if target != 0 else 0
+
+        # Calculate OEE
+        oee = runTimePercent * performance
     
         # Extract cell, area, and machine info
         cell, area, machine = extract_info_from_tag(machine_tag)
     
         # Prepare SQL query
-        sql_query = "INSERT INTO analysis_connect.oee_data (cell, area, machine, date, run_minutes, run_time_percent, idle_minutes, idle_time_percent, fault_minutes, fault_time_percent, output, target, performance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        sql_query = "INSERT INTO analysis_connect.oee_data (cell, area, machine, date, run_minutes, run_time_percent, idle_minutes, idle_time_percent, fault_minutes, fault_time_percent, output, target, performance, oee) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     
         # Attempt to insert data into the database and log the outcome
         try:
-            affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, yesterday, runMinutes, runTimePercent, idleMinutes, idleTimePercent, faultMinutes, faultTimePercent, output, target, performance], "PowerBI2")
+            affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, yesterday, runMinutes, runTimePercent, idleMinutes, idleTimePercent, faultMinutes, faultTimePercent, output, target, performance, oee], "PowerBI2")
             print("Inserted data for {} successfully. Rows affected: {}".format(machine_tag, affectedRows))
         except Exception as e:
             print("Error inserting data for {}: {}".format(machine_tag, e))

@@ -16,7 +16,8 @@ calendar = Calendar.getInstance()
 calendar.add(Calendar.DATE, -1)
 yesterday = calendar.getTime()
 
-# Set the start date to August 14, 2023
+# Set the start date to August 14, 2023, as this is the furthest back the data curerntly goes
+# This may be different in the future
 startCalendar = Calendar.getInstance()
 startCalendar.set(2023, Calendar.AUGUST, 14)  # Calendar.AUGUST is equivalent to 7
 
@@ -169,7 +170,7 @@ while startCalendar.getTimeInMillis() <= yesterday.getTime():
         runMinutes, idleMinutes, faultMinutes = duration(machine_tag, loopDayStart, loopDayEnd, 1) // 60, duration(machine_tag_idle, loopDayStart, loopDayEnd, 1) // 60, duration(machine_tag_fault, loopDayStart, loopDayEnd, 1) // 60
     
         # Calculate run, idle, and fault time %
-        runTimePercent, idleTimePercent, faultTimePercent  = round(runMinutes*100 / 1440, 14), round(idleMinutes*100 / 1440, 14), round(faultMinutes*100 / 1440, 14)
+        runTimePercent, idleTimePercent, faultTimePercent  = round(runMinutes / 1440, 14), round(idleMinutes / 1440, 14), round(faultMinutes / 1440, 14)
 
         # Calculate output
         output = sum(machine_tag_dhr_recorded, loopDayStart, loopDayEnd)
@@ -178,7 +179,7 @@ while startCalendar.getTimeInMillis() <= yesterday.getTime():
         target = maximum(machine_tag_target_per_day, loopDayStart, loopDayEnd)
 
         # Calculate performance
-        performance = round(output*100 / target, 14) if target != 0 else 0
+        performance = round(output / target, 14) if target != 0 else 0
 
         # Calculate OEE
         oee = runTimePercent * performance
@@ -199,10 +200,8 @@ while startCalendar.getTimeInMillis() <= yesterday.getTime():
     print('Finished for {}'.format(loopDayStart))
 
     # Estimate time left
-    
-
     time_left_seconds = estimate_time_left(start_time, days_processed)
-    print("Time left: {:.2f} minutes".format(time_left_seconds / 60))
+    print("Time left: {:.2f} minutes".format(int(time_left_seconds / 60)))
     days_processed += 1
     start_time = System.currentTimeMillis()
 
