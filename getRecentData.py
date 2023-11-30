@@ -1,3 +1,5 @@
+# the same as getHistoricalData.py, except it only gets data starting from the day after the last day of data in the database
+
 import system
 from java.util import Calendar
 from historical import duration, sum, maximum
@@ -16,10 +18,11 @@ calendar = Calendar.getInstance()
 calendar.add(Calendar.DATE, -1)
 yesterday = calendar.getTime()
 
-# Set the start date to August 14, 2023, as this is the furthest back the data curerntly goes
-# This may be different in the future
+# Set the start date to the day after the most recent day in the database
+# This is to avoid getting duplicate data
 startCalendar = Calendar.getInstance()
-startCalendar.set(2023, Calendar.AUGUST, 14)  # Calendar.AUGUST is equivalent to 7
+startCalendar.set(2023, Calendar.NOVEMBER, 24)
+
 
 # Start time for the whole process
 start_time = System.currentTimeMillis()
@@ -198,7 +201,7 @@ while startCalendar.getTimeInMillis() <= yesterday.getTime():
             affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, loopDayStart, runMinutes, runTimePercent, idleMinutes, idleTimePercent, faultMinutes, faultTimePercent, output, target, performance, oee], "PowerBI2")
         except Exception as e:
             print("Error inserting data for {}: {}".format(machine_tag, e))
-
+    
     # Move to the next day
     print('Finished for {}'.format(loopDayStart))
 

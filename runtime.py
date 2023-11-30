@@ -1,6 +1,9 @@
+# the same as getHistoricalData.py, except it only gets data starting from the day after the last day of data in the database
+
 import system
 from java.util import Calendar
 from historical import duration, sum, maximum
+import java.lang.System as System
 
 # Function to parse 'cell', 'area', and 'machine' identifiers from a machine tag
 def extract_info_from_tag(tag):
@@ -9,13 +12,32 @@ def extract_info_from_tag(tag):
         return parts[1], parts[2], parts[3]
     else:
         return "Unknown", "Unknown", "Unknown"
-
-# Calculate start and end times
+    
+# Calculate yesterday's date
 calendar = Calendar.getInstance()
 calendar.add(Calendar.DATE, -1)
 yesterday = calendar.getTime()
-startTime = system.date.midnight(yesterday)
-endTime = system.date.addDays(startTime, 1)
+
+# Set the start date to the day after the most recent day in the database
+# This is to avoid getting duplicate data
+startCalendar = Calendar.getInstance()
+startCalendar.set(2023, Calendar.NOVEMBER, 24)
+
+
+# Start time for the whole process
+start_time = System.currentTimeMillis()
+days_processed = 0
+    
+# Calculate total number of days to process
+total_days = (yesterday.getTime() - startCalendar.getTimeInMillis()) // (24 * 60 * 60 * 1000) + 1
+
+# Function to estimate time left
+def estimate_time_left(start_time, days_processed):
+    elapsed_time = (System.currentTimeMillis() - start_time) / 1000  # in seconds
+    if days_processed > 0:
+        time_left_seconds =  elapsed_time * (total_days - days_processed - 1)
+        return time_left_seconds
+    return 0
 
 machine_tags = [
     'limerick/baseplates/makino/makino 2/global tags/run',
@@ -126,7 +148,15 @@ machine_tags = [
     'limerick/triathlon cementless/polish/polish 3/global tags/run'
     ]
 
-for machine_tag in machine_tags:
+# Loop over each day from the start date to yesterday
+while startCalendar.getTimeInMillis() <= yesterday.getTime():
+    # Midnight of the current day in the loop
+    loopDayStart = system.date.midnight(startCalendar.getTime())
+    # One day after the start, which is the end of the current day in the loop
+    loopDayEnd = system.date.addDays(loopDayStart, 1)
+
+    # Now loop over each machine tag for the current day
+    for machine_tag in machine_tags:
         # Replace run with idle
         machine_tag_idle = machine_tag.replace("run", "idle")
 
@@ -140,21 +170,22 @@ for machine_tag in machine_tags:
         machine_tag_target_per_day = machine_tag.replace('run', 'target per day')
 
         # Calculate run, idle, and fault minutes
-        runMinutes, idleMinutes, faultMinutes = duration(machine_tag, startTime, endTime, 1) // 60, duration(machine_tag_idle, startTime, endTime, 1) // 60, duration(machine_tag_fault, startTime, endTime, 1) // 60
+        runMinutes, idleMinutes, faultMinutes = duration(machine_tag, loopDayStart, loopDayEnd, 1) // 60, duration(machine_tag_idle, loopDayStart, loopDayEnd, 1) // 60, duration(machine_tag_fault, loopDayStart, loopDayEnd, 1) // 60
     
         # Calculate run, idle, and fault time %
-        runTimePercent, idleTimePercent, faultTimePercent  = round(runMinutes / 1440, 6), round(idleMinutes / 1440, 6), round(faultMinutes / 1440, 6)
+        runTimePercent, idleTimePercent, faultTimePercent  = round(float(runMinutes) / 1440, 4), round(float(idleMinutes) / 1440, 4), round(float(faultMinutes) / 1440, 4)
 
         # Calculate output
-        output = sum(machine_tag_dhr_recorded, startTime, endTime)
+        output = float(sum(machine_tag_dhr_recorded, loopDayStart, loopDayEnd))
         
         # Calculate target
-        target = maximum(machine_tag_target_per_day, startTime, endTime)
+        target = float(maximum(machine_tag_target_per_day, loopDayStart, loopDayEnd))
 
         # Calculate performance
-        performance = min(
-             round(output / target, 6) if target != 0 else 0,
-             1.5)
+        if target != 0:
+            performance = min(output / target, 1.5)
+        else:
+            performance = 0
 
         # Calculate OEE
         oee = runTimePercent * performance
@@ -167,14 +198,20 @@ for machine_tag in machine_tags:
     
         # Attempt to insert data into the database and log the outcome
         try:
-            affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, yesterday, runMinutes, runTimePercent, idleMinutes, idleTimePercent, faultMinutes, faultTimePercent, output, target, performance, oee], "PowerBI2")
-            print("Inserted data for {} successfully. Rows affected: {}".format(machine_tag, affectedRows))
+            affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, loopDayStart, runMinutes, runTimePercent, idleMinutes, idleTimePercent, faultMinutes, faultTimePercent, output, target, performance, oee], "PowerBI2")
         except Exception as e:
             print("Error inserting data for {}: {}".format(machine_tag, e))
 
-# Update timestamp
-truncate_query = "TRUNCATE TABLE analysis_connect.oee_update_timestamp"
-system.db.runUpdateQuery(truncate_query, "PowerBI2")
-insert_query = "INSERT INTO analysis_connect.oee_update_timestamp (timestamp) VALUES (?)"
-system.db.runPrepUpdate(insert_query, [system.date.now()], "PowerBI2")
-print("Updated timestamp in oee_update_timestamp table successfully.")
+    
+    # Move to the next day
+    print('Finished for {}'.format(loopDayStart))
+
+    # Estimate time left
+    time_left_seconds = estimate_time_left(start_time, days_processed)
+    print("Time left: {:.2f} minutes".format(int(time_left_seconds / 60)))
+    days_processed += 1
+    start_time = System.currentTimeMillis()
+
+    startCalendar.add(Calendar.DATE, 1)
+
+print("All runtimes added to MariaDB.")
