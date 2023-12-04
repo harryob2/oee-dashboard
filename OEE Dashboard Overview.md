@@ -22,11 +22,11 @@ OEE (Overall Equipment Effectiveness) is a measure of manufacturing productivity
 Where:
 
 - **Availability**: 
-  - `Availability = (Run Time of Machine) / (Total Available Time)`
+  - \$\$ \text{Availability} = \frac{\text{Run Time of Machine}}{\text{Total Available Time}} \$\$
 - **Performance**: 
-  - `Performance = (Total Output) / (Target Output)`
+  - \$\$ \text{Performance} = \frac{\text{Total Output}}{\text{Target Output}} \$\$
 - **Quality**: Currently set to 1 (default) as it's not measured. Ideally, it should be:
-  - `Quality = (Parts Started) / (Parts Finished)`
+  - \$\$ \text{Quality} = \frac{\text{Parts Started}}{\text{Parts Finished}} \$\$
 
 ## Data Flow
 
