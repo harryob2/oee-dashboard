@@ -21,7 +21,7 @@ OEE (Overall Equipment Effectiveness) is a measure of manufacturing productivity
 
 Where:
 
-$ \text{Availability} = \frac{\text{Run Time of Machine}}{\text{Total Available Time}} $
+$ \frac{a}{b} $
 - **Availability**: 
   - $$ \text{Availability} = \frac{\text{Run Time of Machine}}{\text{Total Available Time}} $$
 
