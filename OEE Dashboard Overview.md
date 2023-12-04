@@ -39,9 +39,9 @@ Data is sent from Ignition to the MariaDB server every 24 hours, where it's stor
 
 1. Open the Ignition Designer Launcher desktop app.
 2. Navigate to `Gateway Events` under `Scripting`.
-<br>
+<br></br>
 ![Gateway events location](images/gateway%20events.png)
-<br>
+<br></br>
 3. Find the `OEE Data` script under `Scheduled`.
 <br>
 ![OEE Data script](images/oee%20data%20script.png)
