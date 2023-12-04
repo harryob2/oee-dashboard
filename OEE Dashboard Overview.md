@@ -21,6 +21,8 @@ OEE (Overall Equipment Effectiveness) is a measure of manufacturing productivity
 
 Where:
 
+This sentence uses `$` delimiters to show math inline:  $\sqrt{3x-1}+(1+x)^2$
+
 - **Availability**: 
   - $$ \text{Availability} = \frac{\text{Run Time of Machine}}{\text{Total Available Time}} $$
 
