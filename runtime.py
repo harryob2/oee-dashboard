@@ -146,6 +146,7 @@ for machine_tag in machine_tags:
     runTimePercent, idleTimePercent, faultTimePercent  = round(float(runMinutes) / 1440, 4), round(float(idleMinutes) / 1440, 4), round(float(faultMinutes) / 1440, 4)
 
     # Calculate output
+    # Must be converted to float, because it is returned in a weird format
     output = float(sum(machine_tag_dhr_recorded, startTime, endTime))
     
     # Calculate target
