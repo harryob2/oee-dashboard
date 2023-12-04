@@ -33,11 +33,15 @@ $$\text{Quality} = \frac{\text{Parts Started}}{\text{Parts Finished}}$$
 
 Data is sent from Ignition to the MariaDB server every 24 hours, where it's stored in a table. The Power BI dashboard connects to this database and refreshes every 24 hours as well.
 
+![Data flow chart](images/oee%20dashboard%20data%20flowchart.png)
+
 ### Accessing the Data Script in Ignition
 
 1. Open the Ignition Designer Launcher desktop app.
 2. Navigate to `Gateway Events` under `Scripting`.
+![Gateway events location](images/gateway%20events.png)
 3. Find the `OEE Data` script under `Scheduled`.
+![OEE Data script](images/oee%20data%20script.png)
 
 ### OEE Data Script Details
 
