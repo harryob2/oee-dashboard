@@ -75,6 +75,10 @@ Data is sent from Ignition to the MariaDB server every 24 hours, where it's stor
 
 <br></br>
 
+# Files description
+`OEE_Data.py` is the script that runs every 24 hours.
+`getHistoricalData.py` was used to populate the table with historical data.
+
 # Connecting Power BI to MariaDB
 
 Getting data to Power BI is pretty straightforward. The connection details are as follows:
