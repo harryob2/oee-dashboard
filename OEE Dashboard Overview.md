@@ -17,7 +17,7 @@ This document provides an overview of the OEE Dashboard, detailing how live data
 
 OEE (Overall Equipment Effectiveness) is a measure of manufacturing productivity and is calculated as follows:
 
-- **OEE** = Availability × Performance × Quality
+$$\text{OEE} = \text{Availability} \times \text{Performance} \times \text{Quality}$$
 
 Where:
 
