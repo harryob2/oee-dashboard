@@ -4,7 +4,7 @@ A collection of scripts for getting OEE data from ignition and saving it to Mari
 
 `runtime.py` and `getHistoricalData.py` are the 2 important scripts.
 
-`runtime.py` runs everyday at 3:30am to update the table. `getHistoricalData.py` was used to populate the table with historical data, which went as far back as the 14th of August 2023, around the time the plant reopened from the 2 week shutdown.
+`runtime.py` runs everyday at 3:20am to update the table. `getHistoricalData.py` was used to populate the table with historical data, which went as far back as the 14th of August 2023, around the time the plant reopened from the 2 week shutdown.
 
 The other scripts were used by myself to analyze and understand the data.
 
