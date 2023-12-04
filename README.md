@@ -28,7 +28,7 @@ $$\text{Availability} = \frac{\text{Run Time of Machine}}{\text{Total Available 
 $$\text{Performance} = \frac{\text{Total Output}}{\text{Target Output}}$$
 
 $$\text{Quality} = \frac{\text{Parts Started}}{\text{Parts Finished}}$$
-**Note** Quality is currently set to 1 as it's not measured, however this function shows how it should ideally be measured. 
+**Note:** Quality is currently set to 1 as it's not measured, however this function shows how it should ideally be measured. 
 
 
 ## Data Flow
