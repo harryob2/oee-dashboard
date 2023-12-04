@@ -43,9 +43,9 @@ Data is sent from Ignition to the MariaDB server every 24 hours, where it's stor
 ![Gateway events location](images/gateway%20events.png)
 <br></br>
 3. Find the `OEE Data` script under `Scheduled`.
-<br>
+<br></br>
 ![OEE Data script](images/oee%20data%20script.png)
-<br>
+<br></br>
 
 ### OEE Data Script Details
 
