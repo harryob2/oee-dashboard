@@ -86,6 +86,7 @@ Getting data to Power BI is pretty straightforward. The connection details are a
 Using these, you can connect directly to the database. To set up scheduled refresh, you need to configure the connection to use the data gateway. To do this, just find the semantic model settings here: Power BI, then under ‘Gateway and Cloud Connections’ make sure the connection is configured to use the data gateway connection.
 
 # Dashboard Design
+![Dashboard](images/dashboard.png)
 
 The dashboard design is pretty simple on the face of it, however, there is a lot going on behind the scenes.
 
