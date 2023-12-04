@@ -11,7 +11,7 @@ View the dashboard [here](https://app.powerbi.com/groups/f70626e9-dc6f-4581-8d3e
 - **Development Date**: Late November 2023
 - **Team**:
   - **Lead Developer**: Harry O’Brien
-  - **Support and Guidance**: David Higgins
+  - **Technical Support**: David Higgins
   - **Initial Design and Concept**: Ante Tolusic
   - **Project Lead**: Ante Tolusic
 
