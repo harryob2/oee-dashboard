@@ -96,22 +96,22 @@ Using these, you can connect directly to the database. To set up scheduled refre
 
 The dashboard design is pretty simple on the face of it, however, there is a lot going on behind the scenes.
 
-## Cell, Area, and Machine Filters
+### Cell, Area, and Machine Filters
 
 These are very straightforward, they’re just slicers. There are 3 separate slicers there, and they have 1 black shape behind them to make it look like one unit.
 
-## Buttons
+### Buttons
 
 These are the most complicated parts. Each button is connected to a bookmark. There is an invisible date slicer in the top left corner, and each bookmark manipulates this date slicer.
 
-## Availability and Performance Cards
+### Availability and Performance Cards
 
 These large cards are actually a number of individual components all grouped together. There are 3 card components that update dynamically, and the other bits are just for styling.
 
-## OEE Card
+### OEE Card
 
 This one is straightforward, just the OEE figure on a gauge card.
 
-## 2 Charts
+### 2 Charts
 
 A hierarchy was made with cell, area, and machine, and that’s how Power BI knows what order to display the names in. The chart itself is very simple, just a stacked bar chart with a line chart, except I got rid of the line and replaced it with dots.
