@@ -4,7 +4,7 @@
 
 This document provides an overview of the OEE Dashboard, detailing how live data is transferred from Ignition to our On-Premises MariaDB server and then to the Power BI dashboard.
 
-View the dashboard [here](https://app.powerbi.com/groups/f70626e9-dc6f-4581-8d3e-8cb7b8d55492/reports/917da8cc-3155-4ed0-b0e9-98f7abf41540/ReportSection?experience=power-bi).
+View the dashboard [here]([https://app.powerbi.com/groups/f70626e9-dc6f-4581-8d3e-8cb7b8d55492/reports/917da8cc-3155-4ed0-b0e9-98f7abf41540/ReportSection?experience=power-bi](https://app.powerbi.com/groups/f70626e9-dc6f-4581-8d3e-8cb7b8d55492/reports/c8e4873d-1100-4921-b54e-838e3ac61278/ReportSection?experience=power-bi&bookmarkGuid=Bookmark997d42113266f8dd1318)).
 
 ## Background
 
