@@ -1,6 +1,7 @@
 import system
 from java.util import Calendar
 from historical import duration, sum, maximum
+import csv
 
 # Function to parse 'cell', 'area', and 'machine' identifiers from a machine tag
 def extract_info_from_tag(tag):
@@ -126,6 +127,8 @@ machine_tags = [
     '[Main]limerick/triathlon cementless/polish/polish 3/global tags/run'
     ]
 
+data_rows = []
+
 for machine_tag in machine_tags:
     # Replace run with idle
     machine_tag_idle = machine_tag.replace("run", "idle")
@@ -167,18 +170,34 @@ for machine_tag in machine_tags:
     # Extract cell, area, and machine info
     cell, area, machine = extract_info_from_tag(machine_tag)
 
+    # Append data to dataframe
+    data_row = [cell, area, machine, startTime, runMinutes, runTimePercent, idleMinutes, idleTimePercent, faultMinutes, faultTimePercent, output, target, performance, oee, adjustedTarget]
+
+    # Append data to list
+    data_rows.append(data_row)
     # Prepare SQL query
-    sql_query = "INSERT INTO analysis_connect.oee_data (cell, area, machine, date, run_minutes, run_time_percent, idle_minutes, idle_time_percent, fault_minutes, fault_time_percent, output, target, performance, oee, adjusted_target) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    # sql_query = "INSERT INTO analysis_connect.oee_data (cell, area, machine, date, run_minutes, run_time_percent, idle_minutes, idle_time_percent, fault_minutes, fault_time_percent, output, target, performance, oee, adjusted_target) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     # Attempt to insert data into the database and log the outcome
-    try:
-        affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, startTime, runMinutes, runTimePercent, idleMinutes, idleTimePercent, faultMinutes, faultTimePercent, output, target, performance, oee, adjustedTarget], "PowerBI2")
-    except Exception as e:
-        print("Error inserting data for {}: {}".format(machine_tag, e))
+    # try:
+    #     affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, startTime, runMinutes, runTimePercent, idleMinutes, idleTimePercent, faultMinutes, faultTimePercent, output, target, performance, oee, adjustedTarget], "PowerBI2")
+    # except Exception as e:
+    #     print("Error inserting data for {}: {}".format(machine_tag, e))
+
+# Specify file path
+file_path = "C:/Users/hobrien4/OneDrive - Stryker/Documents/projects/oee dashboard/oee_data.csv"
+
+# Write data to CSV file
+with open(file_path, 'w') as file:
+    writer = csv.writer(file)
+    # Write header
+    writer.writerow(['cell', 'area', 'machine', 'date', 'run_minutes', 'run_time_percent', 'idle_minutes', 'idle_time_percent', 'fault_minutes', 'fault_time_percent', 'output', 'target', 'performance', 'oee', 'adjusted_target'])
+    # Write data rows
+    writer.writerows(data_rows)
 
 # Update timestamp
-truncate_query = "TRUNCATE TABLE analysis_connect.oee_update_timestamp"
-system.db.runUpdateQuery(truncate_query, "PowerBI2")
-insert_query = "INSERT INTO analysis_connect.oee_update_timestamp (timestamp) VALUES (?)"
-system.db.runPrepUpdate(insert_query, [system.date.now()], "PowerBI2")
-print("Updated OEE Data successfully.")
+# truncate_query = "TRUNCATE TABLE analysis_connect.oee_update_timestamp"
+# system.db.runUpdateQuery(truncate_query, "PowerBI2")
+# insert_query = "INSERT INTO analysis_connect.oee_update_timestamp (timestamp) VALUES (?)"
+# system.db.runPrepUpdate(insert_query, [system.date.now()], "PowerBI2")
+print("Exported OEE Data successfully.")
