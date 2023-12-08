@@ -153,11 +153,11 @@ for machine_tag in machine_tags:
     target = float(maximum(machine_tag_target_per_day, startTime, endTime))
 
     # Calculate adjusted target
-    adjustedTarget = round(target * runTimePercent)
+    adjustedTarget = round(target * runTimePercent, 4)
 
     # Calculate performance
-    if target != 0:
-        performance = min(output / adjustedTarget, 3)
+    if adjustedTarget != 0:
+        performance = output / adjustedTarget
     else:
         performance = 0
 
@@ -168,7 +168,7 @@ for machine_tag in machine_tags:
     cell, area, machine = extract_info_from_tag(machine_tag)
 
     # Prepare SQL query
-    sql_query = "INSERT INTO analysis_connect.oee_data (cell, area, machine, date, run_minutes, run_time_percent, idle_minutes, idle_time_percent, fault_minutes, fault_time_percent, output, target, performance, oee, adjusted_target) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    sql_query = "INSERT INTO analysis_connect.oee_data (cell, area, machine, date, run_minutes, run_time_percent, idle_minutes, idle_time_percent, fault_minutes, fault_time_percent, output, target, performance, oee, adjusted_target) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     # Attempt to insert data into the database and log the outcome
     try:
