@@ -157,7 +157,7 @@ for machine_tag in machine_tags:
 
     # Calculate performance
     if adjustedTarget != 0:
-        performance = output / adjustedTarget
+        performance = min(output / adjustedTarget, 3)
     else:
         performance = 0
 
