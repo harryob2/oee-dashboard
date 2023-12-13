@@ -161,6 +161,15 @@ for machine_tag in machine_tags:
     else:
         performance = 0
 
+    # Calculate utilization
+    if faultTimePercent != 1:
+        utilization = runTimePercent / (1 - faultTimePercent)
+    else:
+        utilization = 0
+
+    # Calculate availability
+    availability = 1 - faultTimePercent
+
     # Calculate OEE
     oee = runTimePercent * performance
 
@@ -168,11 +177,11 @@ for machine_tag in machine_tags:
     cell, area, machine = extract_info_from_tag(machine_tag)
 
     # Prepare SQL query
-    sql_query = "INSERT INTO analysis_connect.oee_data (cell, area, machine, date, run_minutes, run_time_percent, idle_minutes, idle_time_percent, fault_minutes, fault_time_percent, output, target, performance, oee, adjusted_target) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    sql_query = "INSERT INTO analysis_connect.oee_data (cell, area, machine, date, run_minutes, run_time_percent, idle_minutes, idle_time_percent, fault_minutes, fault_time_percent, output, target, performance, oee, adjusted_target, utilization, availability) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     # Attempt to insert data into the database and log the outcome
     try:
-        affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, startTime, runMinutes, runTimePercent, idleMinutes, idleTimePercent, faultMinutes, faultTimePercent, output, target, performance, oee, adjustedTarget], "PowerBI2")
+        affectedRows = system.db.runPrepUpdate(sql_query, [cell, area, machine, startTime, runMinutes, runTimePercent, idleMinutes, idleTimePercent, faultMinutes, faultTimePercent, output, target, performance, oee, adjustedTarget, utilization, availability], "PowerBI2")
     except Exception as e:
         print("Error inserting data for {}: {}".format(machine_tag, e))
 
