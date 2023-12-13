@@ -171,7 +171,7 @@ for machine_tag in machine_tags:
     availability = 1 - faultTimePercent
 
     # Calculate OEE
-    oee = runTimePercent * performance
+    oee = utilization * performance * availability
 
     # Extract cell, area, and machine info
     cell, area, machine = extract_info_from_tag(machine_tag)
