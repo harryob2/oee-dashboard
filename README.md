@@ -17,18 +17,21 @@ View the dashboard [here](https://app.powerbi.com/links/H3RHle2E9k?ctid=4e9dbbfb
 
 ## What is OEE?
 
-OEE (Overall Equipment Effectiveness) is a measure of manufacturing productivity and is calculated as follows:
+OEE (Overall Equipment Effectiveness) is a measure of manufacturing productivity and is typically calculated as follows:
 
 $$\text{OEE} = \text{Availability} \times \text{Performance} \times \text{Quality}$$
 
+However, this dashboard doesn't track Quality as of yet. It also includes an additional metric, utilization, so our OEE number is calculated as:
+
+$$\text{OEE} = \text{Utilization} \times \text{Availability} \times \text{Performance}$$
+
 Where:
 
-$$\text{Availability} = \frac{\text{Run Time of Machine}}{\text{Total Available Time}}$$
+$$\text{Utilization} = \frac{\text{Run Time of Machine}}{\text{Total Available Time}}$$
+
+$$\text{Availability} = 1 - \frac{\text{Fault Time of Machine}}{\text{Total Available Time}}$$
 
 $$\text{Performance} = \frac{\text{Total Output}}{\text{Target Output}}$$
-
-$$\text{Quality} = \frac{\text{Parts Started}}{\text{Parts Finished}}$$
-**Note:** Quality is currently set to 1 as it's not measured, however this function shows how it should ideally be measured. 
 
 
 ## Data Flow
